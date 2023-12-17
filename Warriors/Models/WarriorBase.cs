@@ -8,8 +8,6 @@ namespace Warriors.Models
 {
     internal abstract class WarriorBase : IWarrior
     {
-        private const int REGEN_AMOUNT = 10;
-
         protected int _index;
         protected int _hp;
 
@@ -46,22 +44,43 @@ namespace Warriors.Models
 
         public string NameWithHP => $"{Name} ({CurrentHP})";
 
+        public WarriorBase()
+        {
+            _hp = BaseHP;
+        }
+
         public void SetIndex(int index)
         {
             _index = index;
         }
 
-        public void Regenerate()
+        public void Regenerate(int regenAmount)
         {
             if (IsAlive)
             {
-                CurrentHP += REGEN_AMOUNT;
+                CurrentHP += regenAmount;
             }
         }
 
         public void Die()
         {
             IsAlive = false;
+            CurrentHP = 0;
+        }
+
+        public virtual void Attack(IWarrior defender)
+        {
+            Random rnd = new Random();
+
+            if (rnd.Next(2) > 0)
+            {
+                // valami történjen ha ismeretlen harcossal küzd - 50% eséllyel legyőzi
+                defender.Die();
+            }
+            else
+            {
+                this.Die();
+            }
         }
     }
 }

@@ -2,31 +2,31 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Warriors.Models;
 
 namespace Warriors.Modules
 {
-    internal class OneVsOneArena : ArenaBase
+    internal class CursedOneVsOneArena : ArenaBase
     {
         private const int REGEN_AMOUNT = 10;
 
-        public OneVsOneArena(IServiceProvider serviceProvider)
+        public CursedOneVsOneArena(IServiceProvider serviceProvider)
             : base(serviceProvider)
         {
         }
 
         public override string GetName()
         {
-            return "1v1 Aréna";
+            return "Elátkozott 1v1 Aréna";
         }
 
         public override void ListRules()
         {
             Console.WriteLine("Ebben az arénában minden körben 2 véletlenszerüen választott harcos küzd meg egymással.");
-            Console.WriteLine("A két csatázó harcos életereje a felére csökken, a pihenöké 10-zel növekszik.");
+            Console.WriteLine("Az aréna el van átkozva: a harcosok életereje minden kör végén a felére csökken. " +
+                "Ha az életerejük így a maximum negyede alá esik, meghalnak. A pihenö harcosok életereje 10-zel növekszik.");
             Console.WriteLine("Csak egy maradhat!");
         }
 
@@ -50,6 +50,34 @@ namespace Warriors.Modules
             else
             {
                 Console.WriteLine($"A harc szabálytalanul ért véget.");
+            }
+        }
+
+        public override void DoArenaEffect()
+        {
+            var casualties = new List<IWarrior>();
+
+            Console.WriteLine("Lesújt az átok...");
+
+            foreach (IWarrior warrior in _warriors)
+            {
+                if (!warrior.IsAlive)
+                {
+                    continue;
+                }
+
+                warrior.CurrentHP = warrior.CurrentHP / 2;
+
+                if (warrior.CurrentHP < warrior.BaseHP / 4)
+                {
+                    warrior.Die();
+                    casualties.Add(warrior);
+                }
+            }
+
+            if (casualties.Count > 0)
+            {
+                Console.WriteLine($"A következö harcosokat elragadta az átok: {string.Join(", ", casualties.Select(x => x.Name))}.");
             }
         }
 
@@ -88,29 +116,8 @@ namespace Warriors.Modules
                 Console.WriteLine($"...de az összecsapást egyikük sem élte túl.");
             }
 
-            ExhaustWarrior(attacker);
-            ExhaustWarrior(defender);
-
             liveWarriors.ForEach(x => x.Regenerate(REGEN_AMOUNT));
             Console.WriteLine($"A többi harcos pihent (+{REGEN_AMOUNT}).");
-        }
-
-        private void ExhaustWarrior(IWarrior warrior)
-        {
-            if (warrior.IsAlive)
-            {
-                warrior.CurrentHP = warrior.CurrentHP / 2;
-
-                if (warrior.CurrentHP < warrior.BaseHP / 4)
-                {
-                    warrior.Die();
-                    Console.WriteLine($"{warrior.Name} harcban szerzett sebei halálosnak bizonyultak.");
-                }
-                else
-                {
-                    Console.WriteLine($"{warrior.Name} megsérült a harcban, új életereje: {warrior.CurrentHP}.");
-                }
-            }
         }
     }
 }

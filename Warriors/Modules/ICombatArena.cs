@@ -10,12 +10,12 @@ namespace Warriors.Modules
     {
         string GetName();
         void ListRules();
+        bool IsCombatReady();
+        void ListResults();
         List<string> GetAvailableWarriorClassNames();
         void GenerateWarriors(int numberOfWarriors);
         void ListWarriors();
         void DoCombatRound();
         void DoArenaEffect();
-        bool IsCombatReady();
-        void ListResults();
     }
 }

@@ -4,6 +4,7 @@ using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Warriors.Modules
 {
@@ -12,63 +13,108 @@ namespace Warriors.Modules
         private const int MIN_WARRIORS = 2;
         private const int MAX_WARRIORS = 1000;
 
-        private readonly ICombatArena _arena;
+        private readonly IServiceProvider _serviceProvider;
 
-        public CombatManager(ICombatArena arena)
+        public CombatManager(IServiceProvider serviceProvider)
         {
-            _arena = arena;
+            _serviceProvider = serviceProvider;
         }
 
         public void Start()
         {
-            Console.WriteLine($"Üdvözöllek a(z) {_arena.GetName()} arénában!");
-            _arena.ListRules();
-            Console.WriteLine($"Elérhetö harcostípusok: {string.Join(", ", _arena.GetAvailableWarriorClassNames())}.");
-            RunArena();
+            ICombatArena arena = SelectArena();
+
+            Console.WriteLine();
+            Console.WriteLine($"Üdvözöllek a(z) {arena.GetName()} arénában!");
+            arena.ListRules();
+            Console.WriteLine($"Elérhetö harcostípusok: {string.Join(", ", arena.GetAvailableWarriorClassNames())}.");
+
+            RunArena(arena);
         }
 
-        private void RunArena()
+        private ICombatArena SelectArena()
+        {
+            Console.WriteLine("Kérlek válassz arénát:");
+
+            List<ICombatArena> availableArenas = _serviceProvider.GetServices<ICombatArena>().ToList();
+            var arenaDictionary = new Dictionary<int, ICombatArena>();
+
+            Console.Write("[");
+
+            for (int i = 1; i <= availableArenas.Count; i++)
+            {
+                arenaDictionary.Add(i, availableArenas[i-1]);
+                Console.Write($"{i} - {arenaDictionary[i].GetName()}");
+
+                if (i < availableArenas.Count)
+                {
+                    Console.Write(", ");
+                }
+            }
+
+            Console.WriteLine("]");
+
+            return ReadArenaSelection(arenaDictionary);
+        }
+
+        private ICombatArena ReadArenaSelection(Dictionary<int, ICombatArena> arenaDictionary)
+        {
+            var key = Console.ReadKey(true);
+
+            if (int.TryParse(key.KeyChar.ToString(), out int number) && arenaDictionary.ContainsKey(number))
+            {
+                return arenaDictionary[number];
+            }
+
+            return ReadArenaSelection(arenaDictionary);
+        }
+
+        private void RunArena(ICombatArena arena)
         {
             int numberOfWarriors = GetNumberOfWarriors();
             int round = 0;
 
-            _arena.GenerateWarriors(numberOfWarriors);
-            _arena.ListWarriors();
+            arena.GenerateWarriors(numberOfWarriors);
+            arena.ListWarriors();
 
-            Console.WriteLine("Kezdődik a harc! [Q - kilépés, Enter - folytatás]");
+            Console.WriteLine();
+            Console.WriteLine("Kezdödik a harc!");
 
-            while (_arena.IsCombatReady() && ContinuePrompt())
+            while (arena.IsCombatReady() && ContinuePrompt())
             {
                 round++;
+                Console.WriteLine();
                 Console.WriteLine($"{round}. kör:");
 
-                _arena.DoCombatRound();
-                _arena.DoArenaEffect();
-                _arena.ListWarriors();
+                arena.DoCombatRound();
+                arena.DoArenaEffect();
+                arena.ListWarriors();
             }
 
             Console.WriteLine("A harc véget ért.");
 
-            _arena.ListResults();
+            arena.ListResults();
 
-            AskToRestart();
+            AskToRestart(arena);
         }
 
-        private void AskToRestart()
+        private void AskToRestart(ICombatArena arena)
         {
             Console.WriteLine("Szeretnél még egy kört játszani?(Y/N)");
 
             if (CheckRestartKey())
             {
-                RunArena();
+                RunArena(arena);
             }
-
-            Console.WriteLine($"{_arena.GetName()} játék véget ért.");
+            else
+            {
+                Console.WriteLine($"{arena.GetName()} játék véget ért.");
+            }
         }
 
         private static bool CheckRestartKey()
         {
-            var key = Console.ReadKey();
+            var key = Console.ReadKey(true);
 
             if (char.ToUpperInvariant(key.KeyChar) == 'Y')
             {
@@ -84,7 +130,9 @@ namespace Warriors.Modules
 
         private static bool ContinuePrompt()
         {
-            var key = Console.ReadKey();
+            Console.WriteLine("[Q - kilépés, Enter - folytatás]");
+
+            var key = Console.ReadKey(true);
 
             if (key.Key == ConsoleKey.Enter)
             {

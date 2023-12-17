@@ -30,6 +30,7 @@ namespace Warriors
             .AddTransient<IWarrior, Fighter>()
             .AddTransient<IWarrior, Knight>()
             .AddScoped<ICombatArena, OneVsOneArena>()
+            .AddScoped<ICombatArena, CursedOneVsOneArena>()
             .AddSingleton<ICombatManager, CombatManager>()
             .BuildServiceProvider();
         }

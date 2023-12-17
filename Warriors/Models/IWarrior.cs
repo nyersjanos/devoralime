@@ -22,8 +22,10 @@ namespace Warriors.Models
 
         void SetIndex(int index);
 
-        void Regenerate();
+        void Regenerate(int regenAmount);
 
         void Die();
+
+        void Attack(IWarrior defender);
     }
 }

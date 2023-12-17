@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using System;
+using Warriors.Models;
 using Warriors.Modules;
 
 namespace Warriors
@@ -12,13 +13,23 @@ namespace Warriors
         {
             Initialize();
 
-            Console.WriteLine("Hello, World!");
+            Console.WriteLine("Nyers János - Devora Lime tesztfeladat");
+            Console.WriteLine("Indulhat a játék!");
+
+            var manager = _serviceProvider.GetService<ICombatManager>();
+            manager.Start();
+
+            Console.WriteLine("Játék vége, köszönöm!");
+            Console.ReadLine();
         }
 
         private static void Initialize()
         {
             _serviceProvider = new ServiceCollection()
-            .AddSingleton<ICombatArena, OneVsOneArena>()
+            .AddTransient<IWarrior, Archer>()
+            .AddTransient<IWarrior, Fighter>()
+            .AddTransient<IWarrior, Knight>()
+            .AddScoped<ICombatArena, OneVsOneArena>()
             .AddSingleton<ICombatManager, CombatManager>()
             .BuildServiceProvider();
         }

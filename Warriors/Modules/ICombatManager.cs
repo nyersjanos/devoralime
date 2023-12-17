@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 
 namespace Warriors.Modules
 {
-    internal interface ICombatManager
+    public interface ICombatManager
     {
+        void Start();
     }
 }

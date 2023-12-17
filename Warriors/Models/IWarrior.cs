@@ -6,7 +6,24 @@ using System.Threading.Tasks;
 
 namespace Warriors.Models
 {
-    internal interface IWarrior
+    public interface IWarrior
     {
+        string Name { get; }
+
+        string ClassName { get; }
+
+        int BaseHP { get; }
+
+        int CurrentHP { get; set; }
+
+        bool IsAlive { get; }
+
+        string NameWithHP { get; }
+
+        void SetIndex(int index);
+
+        void Regenerate();
+
+        void Die();
     }
 }

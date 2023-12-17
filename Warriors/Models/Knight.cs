@@ -8,5 +8,8 @@ namespace Warriors.Models
 {
     internal class Knight : WarriorBase
     {
+        public override string ClassName => "Lovas";
+
+        public override int BaseHP => 150;
     }
 }

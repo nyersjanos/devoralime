@@ -6,7 +6,16 @@ using System.Threading.Tasks;
 
 namespace Warriors.Modules
 {
-    internal interface ICombatArena
+    public interface ICombatArena
     {
+        string GetName();
+        void ListRules();
+        List<string> GetAvailableWarriorClassNames();
+        void GenerateWarriors(int numberOfWarriors);
+        void ListWarriors();
+        void DoCombatRound();
+        void DoArenaEffect();
+        bool IsCombatReady();
+        void ListResults();
     }
 }
